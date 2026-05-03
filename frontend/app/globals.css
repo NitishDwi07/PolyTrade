@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  background: #05070f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(59, 130, 246, 0.16), transparent 36rem),
+    radial-gradient(circle at 82% 12%, rgba(139, 92, 246, 0.1), transparent 30rem),
+    #05070f;
+  color: #eef4ff;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(56, 189, 248, 0.28);
+  color: #ffffff;
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen bg-[#05070f] text-slate-100;
+  }
+
+  .section-container {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .glass-panel {
+    @apply rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-xl;
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04] transition duration-300;
+  }
+
+  .premium-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(59,130,246,0.22)] focus:outline-none focus:ring-2 focus:ring-cyan-300/30;
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-100 transition duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-cyan-300/20;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300;
+  }
+
+  .muted {
+    @apply text-slate-400;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-cyan-200 via-blue-300 to-violet-300 bg-clip-text text-transparent;
+  }
+
+  .soft-divider {
+    @apply border-t border-white/10;
+  }
+
+  .premium-input {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04] text-white outline-none transition duration-200 placeholder:text-slate-600 focus:border-cyan-300/50 focus:bg-white/[0.06] focus:ring-2 focus:ring-cyan-300/15;
+  }
+}
