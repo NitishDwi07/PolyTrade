@@ -708,5 +708,3 @@ volumes:
 ## Disclaimer
 
 PolyTrade is an **educational simulation** built for a hackathon. It does not involve real money, real financial instruments, or real payouts of any kind. All credits are virtual and have no monetary value. This project is not affiliated with Polymarket or any financial services provider.
-README (6).md
-20 KB
