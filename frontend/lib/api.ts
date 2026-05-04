@@ -3,8 +3,11 @@ import type {
   Market,
   MarketTradesResponse,
   MarketsResponse,
+  LeaderboardResponse,
+  PortfolioResponse,
   TradeRequest,
   TradeResponse,
+  UserTradesResponse,
   WalletResponse,
 } from "@/lib/types";
 
@@ -96,6 +99,35 @@ export async function placeTrade(payload: TradeRequest): Promise<TradeResponse> 
 export async function getWallet(userId: number): Promise<WalletResponse> {
   try {
     const response = await api.get<WalletResponse>(`/api/wallet/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(apiErrorMessage(error));
+  }
+}
+
+export async function getPortfolio(userId: number): Promise<PortfolioResponse> {
+  try {
+    const response = await api.get<PortfolioResponse>(`/api/portfolio/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(apiErrorMessage(error));
+  }
+}
+
+export async function getLeaderboard(): Promise<LeaderboardResponse> {
+  try {
+    const response = await api.get<LeaderboardResponse>("/api/leaderboard");
+    return response.data;
+  } catch (error) {
+    throw new Error(apiErrorMessage(error));
+  }
+}
+
+export async function getUserTrades(userId: number, limit = 25): Promise<UserTradesResponse> {
+  try {
+    const response = await api.get<UserTradesResponse>(`/api/trades/user/${userId}`, {
+      params: { limit },
+    });
     return response.data;
   } catch (error) {
     throw new Error(apiErrorMessage(error));

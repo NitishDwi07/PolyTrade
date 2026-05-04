@@ -106,3 +106,57 @@ export type WalletResponse = {
   balance: number;
   transactions: WalletTransaction[];
 };
+
+export type PortfolioPosition = {
+  marketId: number;
+  marketQuestion: string;
+  side: TradeSide;
+  shares: number;
+  averagePrice: number;
+  investedAmount: number;
+  currentPrice: number;
+  estimatedValue: number;
+  openPnl: number;
+  settled: boolean;
+  payout: number | null;
+};
+
+export type PortfolioResponse = {
+  userId: number;
+  balance: number;
+  positions: PortfolioPosition[];
+};
+
+export type LeaderboardEntry = {
+  rank: number;
+  userId: number;
+  name: string;
+  username: string;
+  balance: number;
+  tradeCount: number;
+  totalVolume: number;
+  followerCount: number;
+  followingCount: number;
+};
+
+export type LeaderboardResponse = {
+  leaderboard: LeaderboardEntry[];
+};
+
+export type UserTrade = {
+  id: number;
+  marketId: number;
+  marketQuestion: string;
+  side: TradeSide;
+  amount: number;
+  price: number;
+  shares: number;
+  copiedFromTradeId: number | null;
+  isCopied: boolean;
+  createdAt: string;
+};
+
+export type UserTradesResponse = {
+  userId: number;
+  trades: UserTrade[];
+};

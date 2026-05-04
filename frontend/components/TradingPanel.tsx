@@ -6,6 +6,7 @@ import { CheckCircle2 } from "lucide-react";
 import { placeTrade } from "@/lib/api";
 import { formatCredits } from "@/lib/mockData";
 import type { Market, TradeSide } from "@/lib/types";
+import { resolveUserId } from "@/lib/user";
 import { useAuthStore } from "@/store/authStore";
 import { useWalletStore } from "@/store/walletStore";
 
@@ -61,7 +62,7 @@ export function TradingPanel({ market, onTradeSuccess }: TradingPanelProps) {
     setIsSubmitting(true);
     try {
       const result = await placeTrade({
-        userId: backendUserId(user?.id),
+        userId: resolveUserId(user),
         marketId: market.id,
         side,
         amount: numericAmount,
@@ -197,10 +198,6 @@ export function TradingPanel({ market, onTradeSuccess }: TradingPanelProps) {
   );
 }
 
-function backendUserId(id: string | undefined) {
-  const parsed = Number(id);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
-}
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
