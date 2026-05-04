@@ -1,0 +1,17 @@
+# binaries
+bin/
+*.exe
+*.out
+
+# logs
+*.log
+
+# env
+.env
+
+# dependencies
+vendor/
+node_modules/
+
+# OS files
+.DS_Store

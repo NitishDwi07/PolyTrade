@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: polytrade
+      POSTGRES_USER: polytrade
+      POSTGRES_PASSWORD: polytrade
+    ports:
+      - "5432:5432"
