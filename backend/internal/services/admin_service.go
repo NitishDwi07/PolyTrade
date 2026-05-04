@@ -31,6 +31,16 @@ type PayoutResponse struct {
 	Payout float64 `json:"payout"`
 }
 
+type AdminStatsResponse struct {
+	Users             int64   `json:"users"`
+	Markets           int64   `json:"markets"`
+	OpenMarkets       int64   `json:"openMarkets"`
+	ResolvedMarkets   int64   `json:"resolvedMarkets"`
+	Trades            int64   `json:"trades"`
+	TotalVolume       float64 `json:"totalVolume"`
+	CopyRelationships int64   `json:"copyRelationships"`
+}
+
 func CloseMarket(db *gorm.DB, marketID uint) (MarketResponse, error) {
 	if marketID == 0 {
 		return MarketResponse{}, NewServiceError(ErrBadRequest, errors.New("marketId is required"))
@@ -187,6 +197,34 @@ func GetMarketResolution(db *gorm.DB, marketID uint) (ResolutionResponse, error)
 	}
 
 	return toResolutionResponse(resolution, nil, true), nil
+}
+
+func GetAdminStats(db *gorm.DB) (AdminStatsResponse, error) {
+	var response AdminStatsResponse
+
+	if err := db.Model(&models.User{}).Count(&response.Users).Error; err != nil {
+		return AdminStatsResponse{}, err
+	}
+	if err := db.Model(&models.Market{}).Count(&response.Markets).Error; err != nil {
+		return AdminStatsResponse{}, err
+	}
+	if err := db.Model(&models.Market{}).Where("status = ?", models.MarketStatusOpen).Count(&response.OpenMarkets).Error; err != nil {
+		return AdminStatsResponse{}, err
+	}
+	if err := db.Model(&models.Market{}).Where("status = ?", models.MarketStatusResolved).Count(&response.ResolvedMarkets).Error; err != nil {
+		return AdminStatsResponse{}, err
+	}
+	if err := db.Model(&models.Trade{}).Count(&response.Trades).Error; err != nil {
+		return AdminStatsResponse{}, err
+	}
+	if err := db.Model(&models.Trade{}).Select("COALESCE(SUM(amount), 0)").Scan(&response.TotalVolume).Error; err != nil {
+		return AdminStatsResponse{}, err
+	}
+	if err := db.Model(&models.CopyRelationship{}).Count(&response.CopyRelationships).Error; err != nil {
+		return AdminStatsResponse{}, err
+	}
+
+	return response, nil
 }
 
 func creditPayout(tx *gorm.DB, userID uint, resolutionID uint, marketID uint, payout float64) error {

@@ -20,6 +20,8 @@ type MarketResponse struct {
 	YesPrice    float64    `json:"yesPrice"`
 	NoPrice     float64    `json:"noPrice"`
 	ClosesAt    *time.Time `json:"closesAt"`
+	WinningSide *string    `json:"winningSide"`
+	ResolvedAt  *time.Time `json:"resolvedAt"`
 }
 
 func CalculateMarketPrices(market models.Market) (float64, float64) {
@@ -59,6 +61,16 @@ func ToMarketResponse(market models.Market) MarketResponse {
 	}
 }
 
+func ToMarketResponseWithResolution(market models.Market, resolution *models.MarketResolution) MarketResponse {
+	response := ToMarketResponse(market)
+	if resolution != nil {
+		response.WinningSide = &resolution.WinningSide
+		response.ResolvedAt = &resolution.CreatedAt
+	}
+
+	return response
+}
+
 func ListMarkets(db *gorm.DB) ([]MarketResponse, error) {
 	var markets []models.Market
 	if err := db.Order("created_at desc").Find(&markets).Error; err != nil {
@@ -67,7 +79,11 @@ func ListMarkets(db *gorm.DB) ([]MarketResponse, error) {
 
 	response := make([]MarketResponse, 0, len(markets))
 	for _, market := range markets {
-		response = append(response, ToMarketResponse(market))
+		resolution, err := findMarketResolution(db, market.ID)
+		if err != nil {
+			return nil, err
+		}
+		response = append(response, ToMarketResponseWithResolution(market, resolution))
 	}
 
 	return response, nil
@@ -82,5 +98,22 @@ func GetMarket(db *gorm.DB, marketID uint) (MarketResponse, error) {
 		return MarketResponse{}, err
 	}
 
-	return ToMarketResponse(market), nil
+	resolution, err := findMarketResolution(db, market.ID)
+	if err != nil {
+		return MarketResponse{}, err
+	}
+
+	return ToMarketResponseWithResolution(market, resolution), nil
+}
+
+func findMarketResolution(db *gorm.DB, marketID uint) (*models.MarketResolution, error) {
+	var resolution models.MarketResolution
+	if err := db.Where("market_id = ?", marketID).First(&resolution).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &resolution, nil
 }

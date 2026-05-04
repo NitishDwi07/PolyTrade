@@ -33,3 +33,27 @@ func CreateTrade(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, result)
 	}
 }
+
+func GetUserTrades(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, err := parseUintParam(c, "userId")
+		if err != nil {
+			respondError(c, err)
+			return
+		}
+
+		limit, err := parseLimitQuery(c)
+		if err != nil {
+			respondError(c, err)
+			return
+		}
+
+		trades, err := services.GetUserTrades(db, userID, limit)
+		if err != nil {
+			respondError(c, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, trades)
+	}
+}

@@ -132,6 +132,24 @@ func GetFollowers(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+func GetCopyActivity(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, err := parseUintParam(c, "userId")
+		if err != nil {
+			respondError(c, err)
+			return
+		}
+
+		activity, err := services.GetCopyActivity(db, userID)
+		if err != nil {
+			respondError(c, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, activity)
+	}
+}
+
 func followerIDFromRequest(c *gin.Context) (uint, error) {
 	if raw := c.Query("followerId"); raw != "" {
 		value, err := strconv.ParseUint(raw, 10, 64)

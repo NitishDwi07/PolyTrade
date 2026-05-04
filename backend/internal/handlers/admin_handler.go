@@ -78,3 +78,15 @@ func GetMarketResolution(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, resolution)
 	}
 }
+
+func GetAdminStats(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		stats, err := services.GetAdminStats(db)
+		if err != nil {
+			respondError(c, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, stats)
+	}
+}
