@@ -86,3 +86,14 @@ type CopyRelationship struct {
 	Follower   User    `gorm:"foreignKey:FollowerID"`
 	Trader     User    `gorm:"foreignKey:TraderID"`
 }
+
+type MarketResolution struct {
+	gorm.Model
+	MarketID       uint    `gorm:"uniqueIndex;not null"`
+	WinningSide    string  `gorm:"index;not null"`
+	TotalPool      float64 `gorm:"not null;default:0"`
+	WinningShares  float64 `gorm:"not null;default:0"`
+	PayoutPerShare float64 `gorm:"not null;default:0"`
+	ResolvedBy     string
+	Market         Market `gorm:"foreignKey:MarketID"`
+}

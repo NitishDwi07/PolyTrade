@@ -23,6 +23,7 @@ type PortfolioPosition struct {
 	CurrentPrice   float64 `json:"currentPrice"`
 	EstimatedValue float64 `json:"estimatedValue"`
 	OpenPnL        float64 `json:"openPnl"`
+	Settled        bool    `json:"settled"`
 }
 
 func GetPortfolio(db *gorm.DB, userID uint) (PortfolioResponse, error) {
@@ -36,8 +37,8 @@ func GetPortfolio(db *gorm.DB, userID uint) (PortfolioResponse, error) {
 
 	var positions []models.Position
 	if err := db.Preload("Market").
-		Where("user_id = ? AND settled = ?", userID, false).
 		Order("updated_at desc").
+		Where("user_id = ?", userID).
 		Find(&positions).Error; err != nil {
 		return PortfolioResponse{}, err
 	}
@@ -56,6 +57,11 @@ func GetPortfolio(db *gorm.DB, userID uint) (PortfolioResponse, error) {
 		}
 
 		estimatedValue := position.Shares * currentPrice
+		openPnL := estimatedValue - position.InvestedAmount
+		if position.Settled {
+			openPnL = 0
+		}
+
 		response.Positions = append(response.Positions, PortfolioPosition{
 			MarketID:       position.MarketID,
 			MarketQuestion: position.Market.Question,
@@ -65,7 +71,8 @@ func GetPortfolio(db *gorm.DB, userID uint) (PortfolioResponse, error) {
 			InvestedAmount: position.InvestedAmount,
 			CurrentPrice:   currentPrice,
 			EstimatedValue: estimatedValue,
-			OpenPnL:        estimatedValue - position.InvestedAmount,
+			OpenPnL:        openPnL,
+			Settled:        position.Settled,
 		})
 	}
 

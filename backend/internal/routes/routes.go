@@ -15,6 +15,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 
 	api.GET("/health", health)
 	api.GET("/markets", handlers.ListMarkets(db))
+	api.GET("/markets/:id/resolution", handlers.GetMarketResolution(db))
 	api.GET("/markets/:id", handlers.GetMarket(db))
 	api.POST("/trades", handlers.CreateTrade(db))
 	api.GET("/portfolio/:userId", handlers.GetPortfolio(db))
@@ -25,6 +26,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	api.PATCH("/copy/settings/:traderId", handlers.UpdateCopySettings(db))
 	api.GET("/copy/following/:userId", handlers.GetFollowing(db))
 	api.GET("/copy/followers/:traderId", handlers.GetFollowers(db))
+	api.POST("/admin/markets/:id/close", handlers.CloseMarket(db))
+	api.POST("/admin/markets/:id/resolve", handlers.ResolveMarket(db))
 }
 
 func health(c *gin.Context) {
