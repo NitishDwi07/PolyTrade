@@ -48,7 +48,7 @@ export const useAuthStore = create<AuthState>()(
 
         set({
           user: {
-            id: "user_mock_001",
+            id: "1",
             name: displayName,
             username,
             email,
@@ -64,7 +64,7 @@ export const useAuthStore = create<AuthState>()(
 
         set({
           user: {
-            id: "user_mock_001",
+            id: "1",
             name,
             username: safeUsername,
             email,

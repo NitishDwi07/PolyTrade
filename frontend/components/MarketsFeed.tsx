@@ -3,8 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { MarketCard } from "@/components/MarketCard";
-import type { Market, MarketCategory } from "@/lib/mockData";
-import { marketCategories } from "@/lib/mockData";
+import type { Market } from "@/lib/types";
 
 type MarketsFeedProps = {
   markets: Market[];
@@ -12,7 +11,12 @@ type MarketsFeedProps = {
 
 export function MarketsFeed({ markets }: MarketsFeedProps) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<MarketCategory | "All">("All");
+  const [category, setCategory] = useState<string>("All");
+
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(markets.map((market) => market.category))).sort()],
+    [markets],
+  );
 
   const filteredMarkets = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -45,7 +49,7 @@ export function MarketsFeed({ markets }: MarketsFeedProps) {
           </label>
 
           <div className="flex gap-2 overflow-x-auto">
-            {(["All", ...marketCategories] as Array<MarketCategory | "All">).map((item) => {
+            {categories.map((item) => {
               const active = item === category;
 
               return (

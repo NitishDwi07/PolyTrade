@@ -1,27 +1,36 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
-import type { Market } from "@/lib/mockData";
+import { placeTrade } from "@/lib/api";
 import { formatCredits } from "@/lib/mockData";
+import type { Market, TradeSide } from "@/lib/types";
+import { useAuthStore } from "@/store/authStore";
 import { useWalletStore } from "@/store/walletStore";
 
 type TradingPanelProps = {
   market: Market;
+  onTradeSuccess?: () => void;
 };
 
 const quickAmounts = [50, 100, 250, 500];
 
-export function TradingPanel({ market }: TradingPanelProps) {
-  const [side, setSide] = useState<"YES" | "NO">("YES");
+export function TradingPanel({ market, onTradeSuccess }: TradingPanelProps) {
+  const [side, setSide] = useState<TradeSide>("YES");
   const [amount, setAmount] = useState("100");
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const balance = useWalletStore((state) => state.balance);
+  const setBalance = useWalletStore((state) => state.setBalance);
 
   const numericAmount = Number(amount) || 0;
   const selectedPrice = side === "YES" ? market.yesPrice : market.noPrice;
   const estimates = useMemo(() => {
-    const shares = selectedPrice > 0 ? numericAmount / (selectedPrice / 100) : 0;
+    const shares = selectedPrice > 0 ? numericAmount / selectedPrice : 0;
     return {
       shares,
       payout: shares,
@@ -29,9 +38,46 @@ export function TradingPanel({ market }: TradingPanelProps) {
     };
   }, [balance, numericAmount, selectedPrice]);
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSuccess(true);
+    setSuccess(null);
+    setError(null);
+
+    if (!isAuthenticated) {
+      setError("Please log in to place a trade.");
+      return;
+    }
+
+    if (market.status !== "OPEN") {
+      setError("Trading is disabled for this market.");
+      return;
+    }
+
+    if (numericAmount <= 0) {
+      setError("Enter an amount greater than zero.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await placeTrade({
+        userId: backendUserId(user?.id),
+        marketId: market.id,
+        side,
+        amount: numericAmount,
+      });
+      setBalance(result.newBalance);
+      setSuccess(
+        result.copySummary && result.copySummary.executed > 0
+          ? `Trade placed. Copied to ${result.copySummary.executed} followers.`
+          : "Trade placed successfully.",
+      );
+      onTradeSuccess?.();
+    } catch (tradeError) {
+      setError(tradeError instanceof Error ? tradeError.message : "Unable to place trade.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -57,7 +103,8 @@ export function TradingPanel({ market }: TradingPanelProps) {
                 type="button"
                 onClick={() => {
                   setSide(option);
-                  setSuccess(false);
+                  setSuccess(null);
+                  setError(null);
                 }}
                 className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-200 ${
                   active
@@ -83,7 +130,8 @@ export function TradingPanel({ market }: TradingPanelProps) {
               value={amount}
               onChange={(event) => {
                 setAmount(event.target.value);
-                setSuccess(false);
+                setSuccess(null);
+                setError(null);
               }}
               inputMode="decimal"
               className="w-full bg-transparent py-3.5 text-lg font-semibold text-white outline-none placeholder:text-slate-600"
@@ -98,7 +146,8 @@ export function TradingPanel({ market }: TradingPanelProps) {
                 type="button"
                 onClick={() => {
                   setAmount(String(value));
-                  setSuccess(false);
+                  setSuccess(null);
+                  setError(null);
                 }}
                 className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-medium text-slate-300 transition duration-200 hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
               >
@@ -109,22 +158,36 @@ export function TradingPanel({ market }: TradingPanelProps) {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm">
-          <SummaryRow label="Price" value={`${selectedPrice}%`} />
+          <SummaryRow label="Price" value={`${(selectedPrice * 100).toFixed(1)}%`} />
           <SummaryRow label="Estimated shares" value={estimates.shares.toFixed(2)} />
           <SummaryRow label="Max payout" value={`${estimates.payout.toFixed(2)} cr`} />
           <SummaryRow label="Remaining balance" value={`${formatCredits(estimates.remaining)} cr`} />
         </div>
 
-        <button type="submit" className="premium-button w-full">
-          Place Trade
-        </button>
+        {isAuthenticated ? (
+          <button
+            type="submit"
+            disabled={isSubmitting || market.status !== "OPEN"}
+            className="premium-button w-full disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSubmitting ? "Placing..." : market.status === "OPEN" ? "Place Trade" : "Market Closed"}
+          </button>
+        ) : (
+          <Link href="/login" className="premium-button w-full justify-center">
+            Log in to trade
+          </Link>
+        )}
 
         {success ? (
           <div className="flex items-start gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-100">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>
-              {side} trade prepared for {numericAmount || 0} demo credits.
-            </span>
+            <span>{success}</span>
+          </div>
+        ) : null}
+
+        {error ? (
+          <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 p-3 text-sm text-rose-100">
+            {error}
           </div>
         ) : null}
 
@@ -132,6 +195,11 @@ export function TradingPanel({ market }: TradingPanelProps) {
       </form>
     </aside>
   );
+}
+
+function backendUserId(id: string | undefined) {
+  const parsed = Number(id);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
