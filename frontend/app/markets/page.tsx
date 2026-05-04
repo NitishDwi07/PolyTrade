@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BarChart3, CircleDollarSign, RefreshCw, Tags } from "lucide-react";
 import { MarketsFeed } from "@/components/MarketsFeed";
 import { getMarkets } from "@/lib/api";
-import { formatCredits, markets as mockMarkets } from "@/lib/mockData";
+import { formatCredits } from "@/lib/format";
+import { markets as mockMarkets } from "@/lib/mockData";
 import type { Market } from "@/lib/types";
 
 export default function MarketsPage() {

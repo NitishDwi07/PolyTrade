@@ -10,7 +10,7 @@ import {
   unfollowTrader,
   updateCopySettings,
 } from "@/lib/api";
-import { formatCredits } from "@/lib/mockData";
+import { formatCredits, formatDateTime, formatPercent } from "@/lib/format";
 import type { CopyActivityTrade, CopyFollowingItem } from "@/lib/types";
 import { resolveUserId } from "@/lib/user";
 import { useAuthStore } from "@/store/authStore";
@@ -142,14 +142,26 @@ function CopyRelationshipCard({
   const [ratio, setRatio] = useState(String(Math.round(item.copyRatio * 100)));
   const [enabled, setEnabled] = useState(item.isEnabled);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   async function save() {
     setIsSaving(true);
     try {
-      const ratioValue = Math.min(100, Math.max(1, Number(ratio) || 50)) / 100;
+      const clampedRatio = Math.min(100, Math.max(1, Number(ratio) || 50));
+      setRatio(String(clampedRatio));
+      const ratioValue = clampedRatio / 100;
       await onUpdate(item.traderId, ratioValue, enabled);
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function remove() {
+    setIsRemoving(true);
+    try {
+      await onUnfollow(item.traderId);
+    } finally {
+      setIsRemoving(false);
     }
   }
 
@@ -162,7 +174,7 @@ function CopyRelationshipCard({
           </div>
           <h2 className="text-xl font-semibold text-white">{item.traderName}</h2>
           <p className="mt-1 text-sm text-slate-500">@{item.traderUsername}</p>
-          <p className="mt-3 text-xs text-slate-500">Following since {formatDate(item.createdAt)}</p>
+          <p className="mt-3 text-xs text-slate-500">Following since {formatDateTime(item.createdAt)}</p>
         </div>
         <span className={enabled ? "rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300" : "rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-slate-400"}>
           {enabled ? "Enabled" : "Paused"}
@@ -174,6 +186,9 @@ function CopyRelationshipCard({
           <span className="text-sm font-medium text-slate-300">Copy ratio</span>
           <div className="premium-input mt-2 flex items-center px-3">
             <input
+              type="number"
+              min={1}
+              max={100}
               value={ratio}
               onChange={(event) => setRatio(event.target.value)}
               inputMode="numeric"
@@ -194,9 +209,9 @@ function CopyRelationshipCard({
           <Save className="h-4 w-4" />
           {isSaving ? "Saving" : "Save"}
         </button>
-        <button type="button" onClick={() => onUnfollow(item.traderId)} className="secondary-button justify-center px-4 py-3 text-rose-200">
+        <button type="button" onClick={remove} disabled={isRemoving} className="secondary-button justify-center px-4 py-3 text-rose-200 disabled:opacity-50">
           <Trash2 className="h-4 w-4" />
-          Unfollow
+          {isRemoving ? "Removing" : "Unfollow"}
         </button>
       </div>
     </article>
@@ -212,10 +227,10 @@ function ActivityRow({ trade }: { trade: CopyActivityTrade }) {
           {trade.side}
         </span>
       </div>
-      <p className="mt-2 text-xs text-slate-500">Copied from @{trade.originalTraderUsername} · {formatDate(trade.createdAt)}</p>
+      <p className="mt-2 text-xs text-slate-500">Copied from @{trade.originalTraderUsername} · {formatDateTime(trade.createdAt)}</p>
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <MiniMetric label="Amount" value={`${formatCredits(trade.amount)} cr`} />
-        <MiniMetric label="Price" value={`${(trade.price * 100).toFixed(1)}%`} />
+        <MiniMetric label="Price" value={formatPercent(trade.price)} />
         <MiniMetric label="Shares" value={trade.shares.toFixed(2)} />
       </div>
     </div>
@@ -251,13 +266,4 @@ function LoadingRows() {
       ))}
     </div>
   );
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
 }

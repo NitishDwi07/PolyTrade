@@ -14,7 +14,7 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { closeMarket, getAdminStats, getMarkets, resolveMarket } from "@/lib/api";
-import { formatCredits } from "@/lib/mockData";
+import { formatCredits, formatPercent, statusLabel } from "@/lib/format";
 import type { AdminStats, Market, TradeSide } from "@/lib/types";
 
 export default function AdminPage() {
@@ -165,8 +165,8 @@ function MarketAdminRow({
           </div>
           <h2 className="mt-3 text-lg font-semibold text-white">{market.question}</h2>
           <div className="mt-4 grid gap-3 text-sm sm:grid-cols-4">
-            <Metric label="YES" value={`${(market.yesPrice * 100).toFixed(1)}%`} />
-            <Metric label="NO" value={`${(market.noPrice * 100).toFixed(1)}%`} />
+            <Metric label="YES" value={formatPercent(market.yesPrice)} />
+            <Metric label="NO" value={formatPercent(market.noPrice)} />
             <Metric label="Volume" value={`${formatCredits(market.totalVolume)} cr`} />
             <Metric label="Status" value={statusLabel(market.status)} />
           </div>
@@ -250,10 +250,4 @@ function LoadingRows() {
       ))}
     </div>
   );
-}
-
-function statusLabel(status: Market["status"]) {
-  if (status === "OPEN") return "Open";
-  if (status === "CLOSED") return "Closed";
-  return "Resolved";
 }

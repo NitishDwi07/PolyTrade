@@ -5,7 +5,7 @@ import { BarChart3, CircleDollarSign, RefreshCw, TrendingUp, WalletCards } from 
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { getPortfolio } from "@/lib/api";
-import { formatCredits } from "@/lib/mockData";
+import { formatCredits, formatPercent } from "@/lib/format";
 import type { PortfolioPosition, PortfolioResponse } from "@/lib/types";
 import { resolveUserId } from "@/lib/user";
 import { useAuthStore } from "@/store/authStore";
@@ -126,9 +126,9 @@ function PositionRow({ position }: { position: PortfolioPosition }) {
 
       <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-6">
         <Metric label="Shares" value={position.shares.toFixed(2)} />
-        <Metric label="Average price" value={`${(position.averagePrice * 100).toFixed(1)}%`} />
+        <Metric label="Average price" value={formatPercent(position.averagePrice)} />
         <Metric label="Invested" value={`${formatCredits(position.investedAmount)} cr`} />
-        <Metric label="Current price" value={`${(position.currentPrice * 100).toFixed(1)}%`} />
+        <Metric label="Current price" value={formatPercent(position.currentPrice)} />
         <Metric label="Est. value" value={`${formatCredits(position.estimatedValue)} cr`} />
         <Metric label="Payout" value={position.payout === null ? "-" : `${formatCredits(position.payout)} cr`} />
       </div>

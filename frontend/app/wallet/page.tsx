@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, Clock3, RefreshCw, WalletCards } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { getUserTrades, getWallet } from "@/lib/api";
-import { formatCredits } from "@/lib/mockData";
+import { formatCredits, formatDateTime, formatPercent } from "@/lib/format";
 import type { UserTrade, WalletResponse, WalletTransaction } from "@/lib/types";
 import { resolveUserId } from "@/lib/user";
 import { useAuthStore } from "@/store/authStore";
@@ -121,7 +121,7 @@ function TradeRow({ trade }: { trade: UserTrade }) {
       </div>
       <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
         <span>{formatCredits(trade.amount)} credits</span>
-        <span>{(trade.price * 100).toFixed(1)}%</span>
+        <span>{formatPercent(trade.price)}</span>
         <span>{trade.shares.toFixed(2)} shares</span>
         {trade.isCopied ? <span className="text-cyan-300">Copied</span> : null}
       </div>
@@ -162,13 +162,4 @@ function transactionLabel(type: string) {
   };
 
   return labels[type] ?? "Activity";
-}
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
 }

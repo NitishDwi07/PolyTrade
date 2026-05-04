@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowRight, CandlestickChart, LogOut, WalletCards } from "lucide-react";
-import { formatCredits } from "@/lib/mockData";
+import { formatCredits } from "@/lib/format";
 import { useAuthStore } from "@/store/authStore";
 import { useWalletStore } from "@/store/walletStore";
 

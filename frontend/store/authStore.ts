@@ -55,7 +55,7 @@ export const useAuthStore = create<AuthState>()(
             role: "user",
             avatarInitials: initialsFromName(displayName),
           },
-          token: "polytrade_mock_token",
+          token: "polytrade_local_session",
           isAuthenticated: true,
         });
       },
@@ -71,7 +71,7 @@ export const useAuthStore = create<AuthState>()(
             role: "user",
             avatarInitials: initialsFromName(name),
           },
-          token: "polytrade_mock_token",
+          token: "polytrade_local_session",
           isAuthenticated: true,
         });
       },

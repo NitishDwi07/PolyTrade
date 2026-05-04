@@ -7,7 +7,7 @@ import { Clock3, Copy, RefreshCw, Trophy, WalletCards } from "lucide-react";
 import { ProbabilityChart } from "@/components/ProbabilityChart";
 import { TradingPanel } from "@/components/TradingPanel";
 import { getMarket, getMarketTrades } from "@/lib/api";
-import { formatCredits } from "@/lib/mockData";
+import { formatCredits, formatDateTime, formatPercent, sideTone, statusLabel } from "@/lib/format";
 import type { Market, MarketTrade } from "@/lib/types";
 
 const statusClasses = {
@@ -104,7 +104,7 @@ export default function MarketDetailPage() {
           ) : null}
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.035] px-3 py-1 text-xs text-slate-400">
             <Clock3 className="h-3.5 w-3.5" />
-            {formatDate(market.closesAt) ?? "No close time set"}
+            {formatDateTime(market.closesAt) ?? "No close time set"}
           </span>
         </div>
         <div className="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-end">
@@ -115,8 +115,8 @@ export default function MarketDetailPage() {
             <p className="mt-4 max-w-3xl text-base leading-7 text-slate-400">{market.description}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <HeaderMetric label="YES" value={`${yesPercent.toFixed(1)}%`} tone="yes" />
-            <HeaderMetric label="NO" value={`${noPercent.toFixed(1)}%`} tone="no" />
+            <HeaderMetric label="YES" value={formatPercent(yesPercent)} tone="yes" />
+            <HeaderMetric label="NO" value={formatPercent(noPercent)} tone="no" />
           </div>
         </div>
       </section>
@@ -234,11 +234,11 @@ function RecentTrades({ trades }: { trades: MarketTrade[] }) {
                   ) : null}
                 </p>
               </div>
-              <p className={trade.side === "YES" ? "font-semibold text-emerald-300" : "font-semibold text-rose-300"}>
+              <p className={`font-semibold ${sideTone(trade.side)}`}>
                 {trade.side}
               </p>
               <p className="text-slate-300">{formatCredits(trade.amount)} cr</p>
-              <p className="text-slate-400">{toPercent(trade.price).toFixed(1)}%</p>
+              <p className="text-slate-400">{formatPercent(trade.price)}</p>
             </div>
           ))
         )}
@@ -251,31 +251,6 @@ function toPercent(value: number) {
   return value <= 1 ? value * 100 : value;
 }
 
-function statusLabel(status: Market["status"]) {
-  if (status === "OPEN") return "Open";
-  if (status === "CLOSED") return "Closed";
-  return "Resolved";
-}
-
-function formatDate(value: string | null) {
-  if (!value) return null;
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
 function probabilityData(market: Market, trades: MarketTrade[]) {
   const current = toPercent(market.yesPrice);
   const history = trades
@@ -285,7 +260,7 @@ function probabilityData(market: Market, trades: MarketTrade[]) {
       const pressure = trade.side === "YES" ? index + 1 : -(index + 1);
       const yes = Math.max(1, Math.min(99, current - pressure));
       return {
-        time: formatDateTime(trade.createdAt),
+        time: formatDateTime(trade.createdAt) ?? "",
         yes,
         no: 100 - yes,
       };

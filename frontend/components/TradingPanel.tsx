@@ -4,7 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { placeTrade } from "@/lib/api";
-import { formatCredits } from "@/lib/mockData";
+import { formatCredits, formatPercent } from "@/lib/format";
 import type { Market, TradeSide } from "@/lib/types";
 import { resolveUserId } from "@/lib/user";
 import { useAuthStore } from "@/store/authStore";
@@ -159,7 +159,7 @@ export function TradingPanel({ market, onTradeSuccess }: TradingPanelProps) {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm">
-          <SummaryRow label="Price" value={`${(selectedPrice * 100).toFixed(1)}%`} />
+          <SummaryRow label="Price" value={formatPercent(selectedPrice)} />
           <SummaryRow label="Estimated shares" value={estimates.shares.toFixed(2)} />
           <SummaryRow label="Max payout" value={`${estimates.payout.toFixed(2)} cr`} />
           <SummaryRow label="Remaining balance" value={`${formatCredits(estimates.remaining)} cr`} />

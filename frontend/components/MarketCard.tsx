@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Clock3, Layers3 } from "lucide-react";
+import { formatCredits, formatDateTime, formatPercent, statusLabel } from "@/lib/format";
 import type { Market } from "@/lib/types";
-import { formatCredits } from "@/lib/mockData";
 
 type MarketCardProps = {
   market: Market;
@@ -47,7 +47,7 @@ export function MarketCard({ market }: MarketCardProps) {
 
       <div className="mt-4 flex items-center gap-1.5 text-xs text-slate-500">
         <Clock3 className="h-3.5 w-3.5" />
-        {formatDate(market.closesAt) ?? "No close time set"}
+        {formatDateTime(market.closesAt) ?? "No close time set"}
       </div>
 
       <Link href={`/markets/${market.id}`} className="secondary-button mt-auto w-full py-2.5">
@@ -73,7 +73,7 @@ function ProbabilityBar({
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
         <span className="font-medium text-slate-300">{label}</span>
-        <span className="font-semibold text-white">{value.toFixed(1)}%</span>
+        <span className="font-semibold text-white">{formatPercent(value)}</span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-white/10">
         <div className={`h-full rounded-full bg-gradient-to-r ${fill}`} style={{ width: `${value}%` }} />
@@ -96,20 +96,4 @@ function FooterMetric({ label, value, icon }: { label: string; value: string; ic
 
 function toPercent(value: number) {
   return value <= 1 ? value * 100 : value;
-}
-
-function statusLabel(status: Market["status"]) {
-  if (status === "OPEN") return "Open";
-  if (status === "CLOSED") return "Closed";
-  return "Resolved";
-}
-
-function formatDate(value: string | null) {
-  if (!value) return null;
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
 }

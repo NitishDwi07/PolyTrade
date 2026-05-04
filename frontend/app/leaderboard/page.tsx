@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, RefreshCw, Trophy, Users } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { followTrader, getLeaderboard } from "@/lib/api";
-import { formatCredits } from "@/lib/mockData";
+import { formatCredits } from "@/lib/format";
 import type { LeaderboardEntry } from "@/lib/types";
 import { resolveUserId } from "@/lib/user";
 import { useAuthStore } from "@/store/authStore";
@@ -16,6 +16,7 @@ export default function LeaderboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const loadLeaderboard = useCallback(async () => {
     setIsLoading(true);
@@ -37,13 +38,13 @@ export default function LeaderboardPage() {
 
   async function handleFollow(trader: LeaderboardEntry) {
     setMessage(null);
-    setError(null);
+    setActionError(null);
     try {
       await followTrader(trader.userId, { followerId: userId, copyRatio: 0.5 });
       setMessage(`You are now copying ${trader.name}.`);
       await loadLeaderboard();
     } catch {
-      setError("Unable to follow this trader.");
+      setActionError("Unable to follow this trader.");
     }
   }
 
@@ -59,6 +60,11 @@ export default function LeaderboardPage() {
           <div className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm text-emerald-100">
             <CheckCircle2 className="h-4 w-4" />
             {message}
+          </div>
+        ) : null}
+        {actionError ? (
+          <div className="mb-4 rounded-2xl border border-rose-400/20 bg-rose-400/10 p-4 text-sm text-rose-100">
+            {actionError}
           </div>
         ) : null}
         <div className="glass-panel overflow-hidden">
