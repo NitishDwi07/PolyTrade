@@ -1,16 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { RefreshCw, Trophy, Users } from "lucide-react";
+import { CheckCircle2, RefreshCw, Trophy, Users } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
-import { getLeaderboard } from "@/lib/api";
+import { followTrader, getLeaderboard } from "@/lib/api";
 import { formatCredits } from "@/lib/mockData";
 import type { LeaderboardEntry } from "@/lib/types";
+import { resolveUserId } from "@/lib/user";
+import { useAuthStore } from "@/store/authStore";
 
 export default function LeaderboardPage() {
+  const user = useAuthStore((state) => state.user);
+  const userId = resolveUserId(user);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   const loadLeaderboard = useCallback(async () => {
     setIsLoading(true);
@@ -30,6 +35,18 @@ export default function LeaderboardPage() {
     void loadLeaderboard();
   }, [loadLeaderboard]);
 
+  async function handleFollow(trader: LeaderboardEntry) {
+    setMessage(null);
+    setError(null);
+    try {
+      await followTrader(trader.userId, { followerId: userId, copyRatio: 0.5 });
+      setMessage(`You are now copying ${trader.name}.`);
+      await loadLeaderboard();
+    } catch {
+      setError("Unable to follow this trader.");
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -38,13 +55,21 @@ export default function LeaderboardPage() {
         description="Compare traders by balance, trading volume, follower activity, and market participation."
       />
       <section className="section-container pb-16">
+        {message ? (
+          <div className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm text-emerald-100">
+            <CheckCircle2 className="h-4 w-4" />
+            {message}
+          </div>
+        ) : null}
         <div className="glass-panel overflow-hidden">
           {isLoading ? (
             <LoadingRows />
           ) : error ? (
             <ErrorState message={error} onRetry={loadLeaderboard} />
           ) : leaderboard.length > 0 ? (
-            leaderboard.map((trader) => <TraderRow key={trader.userId} trader={trader} />)
+            leaderboard.map((trader) => (
+              <TraderRow key={trader.userId} trader={trader} currentUserId={userId} onFollow={handleFollow} />
+            ))
           ) : (
             <div className="p-8 text-center">
               <p className="font-semibold text-white">No traders yet</p>
@@ -57,8 +82,27 @@ export default function LeaderboardPage() {
   );
 }
 
-function TraderRow({ trader }: { trader: LeaderboardEntry }) {
+function TraderRow({
+  trader,
+  currentUserId,
+  onFollow,
+}: {
+  trader: LeaderboardEntry;
+  currentUserId: number;
+  onFollow: (trader: LeaderboardEntry) => Promise<void>;
+}) {
   const topRank = trader.rank <= 3;
+  const isSelf = currentUserId === trader.userId;
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  async function follow() {
+    setIsFollowing(true);
+    try {
+      await onFollow(trader);
+    } finally {
+      setIsFollowing(false);
+    }
+  }
 
   return (
     <div
@@ -84,10 +128,12 @@ function TraderRow({ trader }: { trader: LeaderboardEntry }) {
 
       <button
         type="button"
+        onClick={follow}
+        disabled={isSelf || isFollowing}
         className="secondary-button justify-center px-4 py-2"
         aria-label={`Follow ${trader.name}`}
       >
-        Follow
+        {isSelf ? "You" : isFollowing ? "Following" : "Follow"}
       </button>
     </div>
   );

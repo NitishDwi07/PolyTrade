@@ -160,3 +160,94 @@ export type UserTradesResponse = {
   userId: number;
   trades: UserTrade[];
 };
+
+export type CopyFollowingItem = {
+  traderId: number;
+  traderName: string;
+  traderUsername: string;
+  copyRatio: number;
+  isEnabled: boolean;
+  createdAt: string;
+};
+
+export type CopyFollowingResponse = {
+  following: CopyFollowingItem[];
+};
+
+export type CopyFollowerItem = {
+  followerId: number;
+  followerName: string;
+  followerUsername: string;
+  copyRatio: number;
+  isEnabled: boolean;
+  createdAt: string;
+};
+
+export type CopyFollowersResponse = {
+  followers: CopyFollowerItem[];
+};
+
+export type CopyActivityTrade = {
+  id: number;
+  marketId: number;
+  marketQuestion: string;
+  side: TradeSide;
+  amount: number;
+  price: number;
+  shares: number;
+  copiedFromTradeId: number;
+  originalTraderId: number;
+  originalTraderUsername: string;
+  createdAt: string;
+};
+
+export type CopyActivityResponse = {
+  userId: number;
+  copiedTrades: CopyActivityTrade[];
+};
+
+export type CopyRelationshipResponse = {
+  id?: number;
+  followerId?: number;
+  followerName?: string;
+  followerUsername?: string;
+  traderId?: number;
+  traderName?: string;
+  traderUsername?: string;
+  copyRatio: number;
+  isEnabled: boolean;
+  createdAt: string;
+};
+
+export type AdminStats = {
+  users: number;
+  markets: number;
+  openMarkets: number;
+  resolvedMarkets: number;
+  trades: number;
+  totalVolume: number;
+  copyRelationships: number;
+};
+
+export type MarketResolution = {
+  id: number;
+  marketId: number;
+  winningSide: TradeSide;
+  totalPool: number;
+  winningShares: number;
+  payoutPerShare: number;
+  resolvedBy: string;
+  alreadyResolved: boolean;
+  createdAt: string;
+  payouts: Array<{
+    userId: number;
+    side: TradeSide;
+    shares: number;
+    payout: number;
+  }>;
+};
+
+export type ResolveMarketResponse = {
+  message: string;
+  resolution: MarketResolution;
+};
