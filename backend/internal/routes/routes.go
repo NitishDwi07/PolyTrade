@@ -20,6 +20,11 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	api.GET("/portfolio/:userId", handlers.GetPortfolio(db))
 	api.GET("/leaderboard", handlers.GetLeaderboard(db))
 	api.GET("/wallet/:userId", handlers.GetWallet(db))
+	api.POST("/copy/follow/:traderId", handlers.FollowTrader(db))
+	api.DELETE("/copy/follow/:traderId", handlers.UnfollowTrader(db))
+	api.PATCH("/copy/settings/:traderId", handlers.UpdateCopySettings(db))
+	api.GET("/copy/following/:userId", handlers.GetFollowing(db))
+	api.GET("/copy/followers/:traderId", handlers.GetFollowers(db))
 }
 
 func health(c *gin.Context) {

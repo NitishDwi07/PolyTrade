@@ -76,3 +76,13 @@ type Position struct {
 	User           User    `gorm:"foreignKey:UserID"`
 	Market         Market  `gorm:"foreignKey:MarketID"`
 }
+
+type CopyRelationship struct {
+	gorm.Model
+	FollowerID uint    `gorm:"uniqueIndex:idx_follower_trader;index;not null"`
+	TraderID   uint    `gorm:"uniqueIndex:idx_follower_trader;index;not null"`
+	CopyRatio  float64 `gorm:"not null;default:0.5"`
+	IsEnabled  bool    `gorm:"index;not null;default:true"`
+	Follower   User    `gorm:"foreignKey:FollowerID"`
+	Trader     User    `gorm:"foreignKey:TraderID"`
+}

@@ -1,6 +1,7 @@
 package seed
 
 import (
+	"errors"
 	"log"
 	"polytrade/internal/models"
 	"time"
@@ -16,6 +17,10 @@ func Run(db *gorm.DB) error {
 	}
 
 	if err := seedMarkets(db); err != nil {
+		return err
+	}
+
+	if err := seedCopyRelationships(db); err != nil {
 		return err
 	}
 
@@ -122,5 +127,63 @@ func seedMarkets(db *gorm.DB) error {
 	}
 
 	log.Println("Seeded demo markets")
+	return nil
+}
+
+func seedCopyRelationships(db *gorm.DB) error {
+	var count int64
+	if err := db.Model(&models.CopyRelationship{}).Count(&count).Error; err != nil {
+		return err
+	}
+	if count > 0 {
+		return nil
+	}
+
+	var vansh models.User
+	var nitish models.User
+	var alice models.User
+
+	if err := db.Where("username = ?", "vansh").First(&vansh).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println("Skipping copy relationship seed: user vansh not found")
+			return nil
+		}
+		return err
+	}
+	if err := db.Where("username = ?", "nitish").First(&nitish).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println("Skipping copy relationship seed: user nitish not found")
+			return nil
+		}
+		return err
+	}
+	if err := db.Where("username = ?", "alice").First(&alice).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println("Skipping copy relationship seed: user alice not found")
+			return nil
+		}
+		return err
+	}
+
+	relationships := []models.CopyRelationship{
+		{
+			FollowerID: vansh.ID,
+			TraderID:   alice.ID,
+			CopyRatio:  0.5,
+			IsEnabled:  true,
+		},
+		{
+			FollowerID: nitish.ID,
+			TraderID:   alice.ID,
+			CopyRatio:  0.3,
+			IsEnabled:  true,
+		},
+	}
+
+	if err := db.Create(&relationships).Error; err != nil {
+		return err
+	}
+
+	log.Println("Seeded copy relationships")
 	return nil
 }

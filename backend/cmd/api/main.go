@@ -30,6 +30,7 @@ func main() {
 		&models.Trade{},
 		&models.WalletTransaction{},
 		&models.Position{},
+		&models.CopyRelationship{},
 	)
 	if err != nil {
 		log.Fatal("Migration failed:", err)

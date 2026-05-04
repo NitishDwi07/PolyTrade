@@ -12,11 +12,12 @@ import (
 )
 
 type TradeResult struct {
-	Message    string              `json:"message"`
-	Trade      TradeResponse       `json:"trade"`
-	NewBalance float64             `json:"newBalance"`
-	Position   PositionResponse    `json:"position"`
-	Market     TradeMarketSnapshot `json:"market"`
+	Message     string              `json:"message"`
+	Trade       TradeResponse       `json:"trade"`
+	NewBalance  float64             `json:"newBalance"`
+	Position    PositionResponse    `json:"position"`
+	Market      TradeMarketSnapshot `json:"market"`
+	CopySummary *CopySummary        `json:"copySummary,omitempty"`
 }
 
 type TradeResponse struct {
@@ -51,6 +52,10 @@ type TradeMarketSnapshot struct {
 }
 
 func ExecuteTrade(db *gorm.DB, userID, marketID uint, side string, amount float64) (TradeResult, error) {
+	return ExecuteTradeWithOptions(db, userID, marketID, side, amount, nil, true)
+}
+
+func ExecuteTradeWithOptions(db *gorm.DB, userID, marketID uint, side string, amount float64, copiedFromTradeID *uint, triggerCopy bool) (TradeResult, error) {
 	side = strings.ToUpper(strings.TrimSpace(side))
 	if userID == 0 {
 		return TradeResult{}, NewServiceError(ErrBadRequest, errors.New("userId is required"))
@@ -104,12 +109,13 @@ func ExecuteTrade(db *gorm.DB, userID, marketID uint, side string, amount float6
 		}
 
 		trade := models.Trade{
-			UserID:   userID,
-			MarketID: marketID,
-			Side:     side,
-			Amount:   amount,
-			Price:    price,
-			Shares:   shares,
+			UserID:            userID,
+			MarketID:          marketID,
+			Side:              side,
+			Amount:            amount,
+			Price:             price,
+			Shares:            shares,
+			CopiedFromTradeID: copiedFromTradeID,
 		}
 
 		if err := tx.Save(&user).Error; err != nil {
@@ -158,6 +164,11 @@ func ExecuteTrade(db *gorm.DB, userID, marketID uint, side string, amount float6
 
 	if err != nil {
 		return TradeResult{}, err
+	}
+
+	if triggerCopy && result.Trade.CopiedFromTradeID == nil {
+		copySummary := ProcessCopyTrades(db, result.Trade)
+		result.CopySummary = &copySummary
 	}
 
 	return result, nil
