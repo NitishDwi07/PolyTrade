@@ -14,7 +14,12 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	api := r.Group("/api")
 
 	api.GET("/health", health)
+	api.GET("/markets", handlers.ListMarkets(db))
+	api.GET("/markets/:id", handlers.GetMarket(db))
 	api.POST("/trades", handlers.CreateTrade(db))
+	api.GET("/portfolio/:userId", handlers.GetPortfolio(db))
+	api.GET("/leaderboard", handlers.GetLeaderboard(db))
+	api.GET("/wallet/:userId", handlers.GetWallet(db))
 }
 
 func health(c *gin.Context) {

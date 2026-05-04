@@ -24,13 +24,12 @@ func CreateTrade(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		err := services.ExecuteTrade(db, req.UserID, req.MarketID, req.Side, req.Amount)
-
+		result, err := services.ExecuteTrade(db, req.UserID, req.MarketID, req.Side, req.Amount)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			respondError(c, err)
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "trade executed"})
+		c.JSON(http.StatusOK, result)
 	}
 }

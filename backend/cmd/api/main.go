@@ -7,6 +7,7 @@ import (
 	"polytrade/internal/database"
 	"polytrade/internal/models"
 	"polytrade/internal/routes"
+	"polytrade/internal/seed"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,9 +28,15 @@ func main() {
 		&models.User{},
 		&models.Market{},
 		&models.Trade{},
+		&models.WalletTransaction{},
+		&models.Position{},
 	)
 	if err != nil {
 		log.Fatal("Migration failed:", err)
+	}
+
+	if err := seed.Run(db); err != nil {
+		log.Fatal("Seed failed:", err)
 	}
 
 	r := gin.Default()
