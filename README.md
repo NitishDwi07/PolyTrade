@@ -13,7 +13,7 @@ PolyTrade is a full-stack prediction market simulator where users trade YES/NO o
 
 ---
 
-🔗 [Live Demo](#) &nbsp;|&nbsp; 🛠️ [Backend API](#) &nbsp;|&nbsp; 📄 [Demo Flow](docs/DEMO_FLOW.md) &nbsp;|&nbsp; 📘 [API Reference](docs/API_QUICK_REFERENCE.md)
+🔗 [Live Demo](https://poly-trade-chi.vercel.app/) &nbsp;|&nbsp; 🛠️ [Backend API](https://polytrade-backend.onrender.com/api/health) &nbsp;|&nbsp; 📄 [Demo Flow](docs/DEMO_FLOW.md) &nbsp;|&nbsp; 📘 [API Reference](docs/API_QUICK_REFERENCE.md)
 
 ---
 
