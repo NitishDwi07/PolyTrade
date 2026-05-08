@@ -27,6 +27,9 @@ type User struct {
 	Name     string  `gorm:"not null"`
 	Username string  `gorm:"uniqueIndex;not null"`
 	Balance  float64 `gorm:"not null;default:0"`
+
+	Email    string  `gorm:"unique"`
+	PasswordHash string  
 }
 
 type Market struct {

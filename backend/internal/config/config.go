@@ -11,6 +11,7 @@ type Config struct {
 	Port        string
 	DatabaseURL string
 	FrontendURL string
+	JWTSecret   string
 }
 
 func Load() (Config, error) {
@@ -20,10 +21,15 @@ func Load() (Config, error) {
 		Port:        getEnv("PORT", "4000"),
 		DatabaseURL: os.Getenv("DATABASE_URL"),
 		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
+		JWTSecret:   os.Getenv("JWT_SECRET"),
 	}
 
 	if cfg.DatabaseURL == "" {
 		return Config{}, errors.New("DATABASE_URL is required")
+	}
+
+	if cfg.JWTSecret == "" {
+		return Config{}, errors.New("JWT_SECRET is required")
 	}
 
 	return cfg, nil

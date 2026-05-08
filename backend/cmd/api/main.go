@@ -44,7 +44,7 @@ func main() {
 	r := gin.Default()
 	r.Use(corsMiddleware(cfg.FrontendURL))
 
-	routes.RegisterRoutes(r, db)
+	routes.RegisterRoutes(r, db, cfg.JWTSecret,)
 
 	log.Println("Server running on :" + cfg.Port)
 	log.Println("Health endpoint: http://localhost:" + cfg.Port + "/health")
@@ -60,7 +60,7 @@ func corsMiddleware(frontendURL string) gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", frontendURL)
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
-
+        c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return

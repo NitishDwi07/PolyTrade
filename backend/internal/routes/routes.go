@@ -8,10 +8,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
+func RegisterRoutes(r *gin.Engine, db *gorm.DB, jwtSecret string,) {
 	r.GET("/health", health)
 
 	api := r.Group("/api")
+
+	authHandler := handlers.NewAuthHandler(db,jwtSecret,)
+
+	api.POST("/auth/register", authHandler.Register)
+    api.POST("/auth/login", authHandler.Login)
 
 	api.GET("/health", health)
 	api.GET("/markets", handlers.ListMarkets(db))

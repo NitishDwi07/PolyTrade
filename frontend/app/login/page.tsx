@@ -20,17 +20,48 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  //changes for auth-fix
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+  event.preventDefault();
 
-    if (!email.trim() || !password.trim()) {
-      setError("Enter your email and password to continue.");
+  setError("");
+
+  if (!email.trim() || !password.trim()) {
+    setError("Enter your email and password to continue.");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "http://localhost:4000/api/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.error || "Login failed");
       return;
     }
 
     login(email.trim(), password);
+
     router.push("/markets");
+  } catch (error) {
+    setError("Server error. Please try again.");
   }
+}
+
 
   return (
     <section className="section-container grid min-h-[calc(100vh-92px)] items-center gap-10 py-12 lg:grid-cols-[0.95fr_1.05fr]">

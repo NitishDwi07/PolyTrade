@@ -8,7 +8,6 @@ import { useAuthStore } from "@/store/authStore";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const register = useAuthStore((state) => state.register);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -17,33 +16,63 @@ export default function RegisterPage() {
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  // changes for auth-fix while registering
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+  event.preventDefault();
 
-    if (
-      !name.trim() ||
-      !username.trim() ||
-      !email.trim() ||
-      !password.trim() ||
-      !confirmPassword.trim()
-    ) {
-      setError("Complete all fields to create your account.");
-      return;
-    }
+  setError("");
 
-    if (password !== confirmPassword) {
-      setError("Passwords must match.");
-      return;
-    }
-
-    if (!accepted) {
-      setError("Confirm that you understand PolyTrade uses virtual credits only.");
-      return;
-    }
-
-    register(name.trim(), email.trim(), password, username.trim());
-    router.push("/markets");
+  if (
+    !name.trim() ||
+    !username.trim() ||
+    !email.trim() ||
+    !password.trim() ||
+    !confirmPassword.trim()
+  ) {
+    setError("Complete all fields to create your account.");
+    return;
   }
+
+  if (password !== confirmPassword) {
+    setError("Passwords must match.");
+    return;
+  }
+
+  if (!accepted) {
+    setError("Confirm that you understand PolyTrade uses virtual credits only.");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "http://localhost:4000/api/auth/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: name.trim(),
+          username: username.trim(),
+          email: email.trim(),
+          password,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.error || "Registration failed");
+      return;
+    }
+
+    router.push("/login");
+  } catch (error) {
+    setError("Server error. Please try again.");
+  }
+}
 
   return (
     <section className="section-container grid min-h-[calc(100vh-92px)] items-center gap-10 py-12 lg:grid-cols-[0.95fr_1.05fr]">
